@@ -59,9 +59,13 @@ for pick in picks:
     pick["player"] = players[picked_player_id]
 
 
-os.mkdir("data")
-print("data folder created")
+try:
+    os.mkdir("data")
+    print("data folder created")
+except:
+    pass
 
-with open("data/merge_data.json", "w") as f:
+
+with open("data/merge_data.json", "w+") as f:
     f.writelines(json.dumps(picks, indent=2))
     print("Merged Data written to data/merge_data.json")

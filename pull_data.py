@@ -1,4 +1,5 @@
 import json
+import os
 import urllib.request as request
 import itertools
 
@@ -21,8 +22,30 @@ def load_players():
         return json.loads(f.read())
 
 
+def get_avg_pick_age(merged_picks):
+    age = []
+    grouped_picks = {k: list(v) for k, v in itertools.groupby(sorted(merged_picks, key=lambda x: x["picked_by"]), key=lambda x: x["picked_by"])}
+    for user_id, user_picks in grouped_picks.items():
+        # Turn the groupby into a list, so we can work on it
+        total_age = sum(p["player"]["age"] for p in user_picks)
+
+        avg_age = total_age / len(user_picks)
+
+        age.append((user_id, avg_age, user_picks[0]["user"]))
+
+    sorted_ages = sorted(age, key=lambda x: x[1], reverse=True)
+
+    for age in sorted_ages:
+        print(f"{age[2]['display_name']}: {age[1]}")
+
+
+print("Pulling league users")
 users = get_league_users(LEAGUE_ID)
+
+print("Loading players")
 players = load_players()
+
+print("Pulling league draft picks")
 picks = get_draft_picks(DRAFT_ID)
 
 # Merge draft pick json with league user data
@@ -35,19 +58,10 @@ for pick in picks:
     picked_player_id = pick["player_id"]
     pick["player"] = players[picked_player_id]
 
-age = []
-grouped_picks = {k: list(v) for k, v in itertools.groupby(sorted(picks, key=lambda x: x["picked_by"]), key=lambda x: x["picked_by"])}
-for user_id, user_picks in grouped_picks.items():
-    # Turn the groupby into a list, so we can work on it
-    total_age = sum(p["player"]["age"] for p in user_picks)
 
-    avg_age = total_age / len(user_picks)
+os.mkdir("data")
+print("data folder created")
 
-    age.append((user_id, avg_age, user_picks[0]["user"]))
-
-sorted_ages = sorted(age, key=lambda x: x[1], reverse=True)
-
-for age in sorted_ages:
-    print(f"{age[2]['display_name']}: {age[1]}")
-
-
+with open("data/merge_data.json", "w") as f:
+    f.writelines(json.dumps(picks, indent=2))
+    print("Merged Data written to data/merge_data.json")

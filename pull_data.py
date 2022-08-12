@@ -63,7 +63,7 @@ try:
     os.mkdir("data")
     print("data folder created")
 except:
-    pass
+    print("data folder found, skipping creation")
 
 
 with open("data/merge_data.json", "w+") as f:

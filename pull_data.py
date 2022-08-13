@@ -27,9 +27,10 @@ def get_avg_pick_age(merged_picks):
     grouped_picks = {k: list(v) for k, v in itertools.groupby(sorted(merged_picks, key=lambda x: x["picked_by"]), key=lambda x: x["picked_by"])}
     for user_id, user_picks in grouped_picks.items():
         # Turn the groupby into a list, so we can work on it
-        total_age = sum(p["player"]["age"] for p in user_picks)
+        ages = [p["player"]["age"] for p in user_picks if p["player"]["age"] is not None]
+        total_age = sum(ages)
 
-        avg_age = total_age / len(user_picks)
+        avg_age = total_age / len(ages)
 
         age.append((user_id, avg_age, user_picks[0]["user"]))
 
@@ -58,6 +59,8 @@ for pick in picks:
     picked_player_id = pick["player_id"]
     pick["player"] = players[picked_player_id]
 
+
+get_avg_pick_age(picks)
 
 try:
     os.mkdir("data")
